@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE / editor
+.idea/
+.vscode/
+.DS_Store
+
+# build scratch
+BUILD_SETUP_NEXT_STEPS.md
+PUBLISH_BLOCKED.md
+.builder_*
+.build_metadata*
+.spawn.*
+.stage_*
+
+# local assistant / pairing artifacts
+.claude/
+CLAUDE.md

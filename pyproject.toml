@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "draftseam"
+version = "0.1.0"
+description = "Read/write 剪映/CapCut .draft timelines for coding agents — no MP4 round-trip."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "SuperMarioYL" }]
+keywords = [
+    "jianying",
+    "capcut",
+    "draft",
+    "video",
+    "timeline",
+    "subtitle",
+    "automation",
+    "agent",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "pydantic>=2.0",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.scripts]
+draftseam = "draftseam.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/SuperMarioYL/draftseam"
+Repository = "https://github.com/SuperMarioYL/draftseam"
+Issues = "https://github.com/SuperMarioYL/draftseam/issues"
+
+[tool.setuptools]
+packages = ["draftseam"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
