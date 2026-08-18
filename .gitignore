@@ -42,3 +42,4 @@ PUBLISH_BLOCKED.md
 # local assistant / pairing artifacts
 .claude/
 CLAUDE.md
+_build_ctx.json
