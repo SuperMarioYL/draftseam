@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "name": "draftseam",
+  "github": "https://github.com/SuperMarioYL/draftseam",
+  "host": "draftseam.lei6393.com",
+  "lang": { "primary": "zh", "toggle": true },
+  "accent": ["#8b7cf6", "#4d9bff", "#34e5d0"],
+  "hero": {
+    "eyebrow": {
+      "zh": "原生时间线 · 智能体可编程 · 零丢失往返",
+      "en": "Native timeline · Agent-programmable · Lossless round-trip"
+    },
+    "headline": {
+      "zh": "让 coding agent\n直接改你的剪映工程",
+      "en": "Let a coding agent\nedit your 剪映 project directly"
+    },
+    "sub": {
+      "zh": "把剪映原生 .draft 时间线解析成结构化多轨数据，智能体插入字幕、配音、转场后写回——轨道结构零丢失，剪映里重新打开即可继续编辑。",
+      "en": "Parses 剪映's native .draft timeline into structured multi-track data, lets an agent insert subtitles, voiceovers and transitions, then writes it back — no track structure lost, and it reopens fully editable in 剪映."
+    },
+    "command": "pip install draftseam"
+  },
+  "advantages": [
+    {
+      "title": {
+        "zh": "看懂你的剪映时间线",
+        "en": "Read your 剪映 timeline as data"
+      },
+      "body": {
+        "zh": "一条命令把整个剪映工程打印成可读的多轨树——视频轨、字幕轨、配音轨、转场、特效连同时间戳一目了然。智能体第一次能真正读懂你的剪辑。",
+        "en": "One command prints your whole 剪映 project as a readable multi-track tree — video, subtitle, voiceover, transition and effect tracks with timestamps. An agent can finally understand your edit."
+      },
+      "chips": [
+        "› draftseam inspect",
+        "› 视频 · 字幕 · 配音 · 转场 · 特效"
+      ]
+    },
+    {
+      "title": {
+        "zh": "智能体直接写回原生轨道",
+        "en": "An agent writes back native tracks"
+      },
+      "body": {
+        "zh": "智能体把字幕、配音、转场作为结构化轨道插进时间线，写回后用剪映重新打开——新内容就是原生可编辑的轨道，不是压扁的 MP4。",
+        "en": "An agent inserts subtitles, voiceovers and transitions as structured tracks, then writes them back — reopen in 剪映 and the new content is native, editable track, not a flattened MP4."
+      },
+      "chips": [
+        "› add-subtitle · add-voiceover · add-transition",
+        "› 写回即可在剪映里继续编辑"
+      ]
+    },
+    {
+      "title": {
+        "zh": "往返零丢失",
+        "en": "Lossless round-trip"
+      },
+      "body": {
+        "zh": "读出 → 改动 → 写回，剪映重新打开就是同一条原生时间线——轨道、字幕、转场结构原样保留，不再因为导出 MP4 把图层丢光。",
+        "en": "Read → edit → write back, and 剪映 reopens the same native timeline — tracks, subtitles and transitions stay intact, instead of losing every layer to an MP4 export."
+      },
+      "chips": [
+        "› 读出 → 写回 往返无损",
+        "› 轨道 · 字幕 · 转场 结构保留"
+      ]
+    },
+    {
+      "title": {
+        "zh": "开源核心，命令行加库",
+        "en": "Open core, CLI + library"
+      },
+      "body": {
+        "zh": "解析、写回、字幕配音转场原语和命令行永久免费，MIT 协议。既能装上就用，也能让智能体直接接进自己的流程。",
+        "en": "Parsing, write-back, the subtitle/voiceover/transition primitives and the CLI are free forever under MIT. Use it from the command line, or let an agent wire it straight into its own workflow."
+      },
+      "chips": [
+        "› pip install draftseam",
+        "› MIT · 永久免费 · 命令行 + 库"
+      ]
+    }
+  ],
+  "scene": { "kind": "particle-field" },
+  "cta": {
+    "headline": {
+      "zh": "别再导出 MP4 重剪了",
+      "en": "Stop exporting MP4 and re-cutting"
+    },
+    "sub": {
+      "zh": "装上 draftseam，让你的 coding agent 直接读写剪映原生时间线——字幕、配音、转场写回即可继续编辑。",
+      "en": "Install draftseam and let your coding agent read and write 剪映's native timeline — subtitles, voiceovers and transitions write back and stay editable."
+    },
+    "button": {
+      "zh": "pip install draftseam",
+      "en": "pip install draftseam"
+    }
+  },
+  "footer": {
+    "tag": {
+      "zh": "draftseam — 让 coding agent 直接读写剪映原生 .draft 时间线。MIT 开源。",
+      "en": "draftseam — let a coding agent read and write 剪映's native .draft timeline. MIT licensed."
+    }
+  }
+}
