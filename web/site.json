@@ -1,102 +1,244 @@
 {
-  "schema": 1,
+  "schema": 3,
   "name": "draftseam",
   "github": "https://github.com/SuperMarioYL/draftseam",
   "host": "draftseam.lei6393.com",
-  "lang": { "primary": "zh", "toggle": true },
-  "accent": ["#8b7cf6", "#4d9bff", "#34e5d0"],
+  "palette": "auto",
+  "lang": {
+    "primary": "zh",
+    "toggle": true
+  },
+  "meta": {
+    "visual_profile": "neon-particle",
+    "content_version": "0.1.0",
+    "demo_source": "docs/demo-results.json"
+  },
   "hero": {
     "eyebrow": {
-      "zh": "原生时间线 · 智能体可编程 · 零丢失往返",
-      "en": "Native timeline · Agent-programmable · Lossless round-trip"
+      "zh": "将支持的剪映 draft bundle 解析成多轨模型，用 Python 或 CLI 修改字幕、音频与转场材料。",
+      "en": "Parse supported Jianying draft bundles into a multitrack model and edit subtitle, audio and transition materials through Python or CLI."
     },
     "headline": {
-      "zh": "让 coding agent\n直接改你的剪映工程",
-      "en": "Let a coding agent\nedit your 剪映 project directly"
+      "zh": "从工程结构入手，\n修改可编辑时间线",
+      "en": "Work with the project.\nEdit the timeline structure."
     },
     "sub": {
-      "zh": "把剪映原生 .draft 时间线解析成结构化多轨数据，智能体插入字幕、配音、转场后写回——轨道结构零丢失，剪映里重新打开即可继续编辑。",
-      "en": "Parses 剪映's native .draft timeline into structured multi-track data, lets an agent insert subtitles, voiceovers and transitions, then writes it back — no track structure lost, and it reopens fully editable in 剪映."
+      "zh": "将支持的剪映 draft bundle 解析成多轨模型，用 Python 或 CLI 修改字幕、音频与转场材料。",
+      "en": "Parse supported Jianying draft bundles into a multitrack model and edit subtitle, audio and transition materials through Python or CLI."
     },
-    "command": "pip install draftseam"
+    "href": "#quickstart",
+    "cta": {
+      "zh": "运行示例",
+      "en": "Run the example"
+    },
+    "ctaGithub": {
+      "zh": "查看源码",
+      "en": "View source"
+    }
+  },
+  "scene": {
+    "kind": "neon-graph",
+    "caption": {
+      "zh": "工程 JSON · 多轨模型",
+      "en": "PROJECT JSON · MULTITRACK MODEL"
+    },
+    "fallback": "/assets/presentation/scene-dark.svg",
+    "fallbackLight": "/assets/presentation/scene-light.svg"
   },
   "advantages": [
     {
       "title": {
-        "zh": "看懂你的剪映时间线",
-        "en": "Read your 剪映 timeline as data"
+        "zh": "结构化读取",
+        "en": "Read structured data"
       },
       "body": {
-        "zh": "一条命令把整个剪映工程打印成可读的多轨树——视频轨、字幕轨、配音轨、转场、特效连同时间戳一目了然。智能体第一次能真正读懂你的剪辑。",
-        "en": "One command prints your whole 剪映 project as a readable multi-track tree — video, subtitle, voiceover, transition and effect tracks with timestamps. An agent can finally understand your edit."
-      },
-      "chips": [
-        "› draftseam inspect",
-        "› 视频 · 字幕 · 配音 · 转场 · 特效"
-      ]
+        "zh": "轨道、材料和时间范围保留在 Draft 模型中。",
+        "en": "Tracks, materials and time ranges remain in the Draft model."
+      }
     },
     {
       "title": {
-        "zh": "智能体直接写回原生轨道",
-        "en": "An agent writes back native tracks"
+        "zh": "集中常见编辑",
+        "en": "Focus common edits"
       },
       "body": {
-        "zh": "智能体把字幕、配音、转场作为结构化轨道插进时间线，写回后用剪映重新打开——新内容就是原生可编辑的轨道，不是压扁的 MP4。",
-        "en": "An agent inserts subtitles, voiceovers and transitions as structured tracks, then writes them back — reopen in 剪映 and the new content is native, editable track, not a flattened MP4."
-      },
-      "chips": [
-        "› add-subtitle · add-voiceover · add-transition",
-        "› 写回即可在剪映里继续编辑"
-      ]
+        "zh": "字幕与音频接口同时维护材料和 segment。",
+        "en": "Subtitle and audio helpers maintain materials and segments together."
+      }
     },
     {
       "title": {
-        "zh": "往返零丢失",
-        "en": "Lossless round-trip"
+        "zh": "读回检查",
+        "en": "Check the written result"
       },
       "body": {
-        "zh": "读出 → 改动 → 写回，剪映重新打开就是同一条原生时间线——轨道、字幕、转场结构原样保留，不再因为导出 MP4 把图层丢光。",
-        "en": "Read → edit → write back, and 剪映 reopens the same native timeline — tracks, subtitles and transitions stay intact, instead of losing every layer to an MP4 export."
-      },
-      "chips": [
-        "› 读出 → 写回 往返无损",
-        "› 轨道 · 字幕 · 转场 结构保留"
-      ]
-    },
-    {
-      "title": {
-        "zh": "开源核心，命令行加库",
-        "en": "Open core, CLI + library"
-      },
-      "body": {
-        "zh": "解析、写回、字幕配音转场原语和命令行永久免费，MIT 协议。既能装上就用，也能让智能体直接接进自己的流程。",
-        "en": "Parsing, write-back, the subtitle/voiceover/transition primitives and the CLI are free forever under MIT. Use it from the command line, or let an agent wire it straight into its own workflow."
-      },
-      "chips": [
-        "› pip install draftseam",
-        "› MIT · 永久免费 · 命令行 + 库"
-      ]
+        "zh": "将写回后的模型与预期结构比较。",
+        "en": "Compare the written model with the intended structure."
+      }
     }
   ],
-  "scene": { "kind": "particle-field" },
-  "cta": {
-    "headline": {
-      "zh": "别再导出 MP4 重剪了",
-      "en": "Stop exporting MP4 and re-cutting"
+  "story": {
+    "intro": {
+      "title": {
+        "zh": "直接处理轨道和材料",
+        "en": "Work with tracks and materials"
+      },
+      "body": {
+        "zh": "当修改对象是字幕或配音位置时，只拿到成片很难保留原来的编辑结构。draftseam 提供对 template.tmp 的结构化读取和写回，并把常见字幕、音频和转场操作收进窄接口。是否能在具体剪映版本中打开，仍需对实际工程验证。",
+        "en": "An exported video does not expose the original subtitle and audio structure. draftseam provides structured access to template.tmp and focused helpers for common timeline edits. Opening the result in a particular Jianying version still requires validation with that project."
+      }
     },
-    "sub": {
-      "zh": "装上 draftseam，让你的 coding agent 直接读写剪映原生时间线——字幕、配音、转场写回即可继续编辑。",
-      "en": "Install draftseam and let your coding agent read and write 剪映's native timeline — subtitles, voiceovers and transitions write back and stay editable."
-    },
-    "button": {
-      "zh": "pip install draftseam",
-      "en": "pip install draftseam"
-    }
+    "sections": [
+      {
+        "title": {
+          "zh": "从输入到结果",
+          "en": "From input to result"
+        },
+        "body": {
+          "zh": "使用仓库自带的示例 bundle，验证模型 round-trip 相等、字幕材料从 1 变 2、opaque 文件字节不变；没有在剪映/CapCut 应用中重新打开验收。",
+          "en": "The supplied fixture validates model round-trip equality, a subtitle count change from one to two, and unchanged opaque-file bytes. It is not reopened in the Jianying/CapCut application in this demo."
+        },
+        "image": {
+          "light": "/assets/presentation/process-light.svg",
+          "dark": "/assets/presentation/process-dark.svg",
+          "alt": {
+            "zh": "使用仓库自带的示例 bundle，验证模型 round-trip 相等、字幕材料从 1 变 2、opaque 文件字节不变；没有在剪映/CapCut 应用中重新打开验收。",
+            "en": "The supplied fixture validates model round-trip equality, a subtitle count change from one to two, and unchanged opaque-file bytes. It is not reopened in the Jianying/CapCut application in this demo."
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "工作原理",
+          "en": "How it works"
+        },
+        "body": {
+          "zh": "bundle.py 负责目录 I/O，parser.py 与 schema.py 建立允许额外字段的 Draft 模型，agent_api.py 原地修改材料和 segment，writer.py 写回 JSON。draft_info.json 等旁文件视为 opaque 数据，不解密或同步修改。",
+          "en": "bundle.py owns directory I/O; parser.py and schema.py create a Draft model that permits extra fields. agent_api.py mutates materials and segments, and writer.py writes JSON back. Sibling files such as draft_info.json are opaque and are not decrypted or synchronized."
+        },
+        "image": {
+          "light": "/assets/presentation/architecture-light.svg",
+          "dark": "/assets/presentation/architecture-dark.svg",
+          "alt": {
+            "zh": "bundle.py 负责目录 I/O，parser.py 与 schema.py 建立允许额外字段的 Draft 模型，agent_api.py 原地修改材料和 segment，writer.py 写回 JSON。draft_info.json 等旁文件视为 opaque 数据，不解密或同步修改。",
+            "en": "bundle.py owns directory I/O; parser.py and schema.py create a Draft model that permits extra fields. agent_api.py mutates materials and segments, and writer.py writes JSON back. Sibling files such as draft_info.json are opaque and are not decrypted or synchronized."
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "能力与接入",
+          "en": "Capabilities and integration"
+        },
+        "body": {
+          "zh": "它处理工程结构，渲染与应用内兼容性由剪辑软件负责。修改真实工程前请保留副本；本工具的一代 .bak 不等于完整版本管理。",
+          "en": "It handles project structure; rendering and application compatibility belong to the editor. Keep a project copy before real edits; a one-generation .bak is not full version control."
+        },
+        "image": {
+          "light": "/assets/presentation/integrations-light.svg",
+          "dark": "/assets/presentation/integrations-dark.svg",
+          "alt": {
+            "zh": "它处理工程结构，渲染与应用内兼容性由剪辑软件负责。修改真实工程前请保留副本；本工具的一代 .bak 不等于完整版本管理。",
+            "en": "It handles project structure; rendering and application compatibility belong to the editor. Keep a project copy before real edits; a one-generation .bak is not full version control."
+          }
+        }
+      }
+    ],
+    "details": [
+      {
+        "title": {
+          "zh": "原地写回范围",
+          "en": "In-place write scope"
+        },
+        "body": {
+          "zh": "CLI 修改 template.tmp 并备份上一代，不更新 opaque 加密文件。",
+          "en": "The CLI updates template.tmp and backs up one generation; opaque encrypted files are not updated."
+        }
+      }
+    ]
   },
-  "footer": {
-    "tag": {
-      "zh": "draftseam — 让 coding agent 直接读写剪映原生 .draft 时间线。MIT 开源。",
-      "en": "draftseam — let a coding agent read and write 剪映's native .draft timeline. MIT licensed."
+  "demo": {
+    "title": {
+      "zh": "实际运行结果",
+      "en": "Actual demo output"
+    },
+    "note": {
+      "zh": "使用仓库自带的示例 bundle，验证模型 round-trip 相等、字幕材料从 1 变 2、opaque 文件字节不变；没有在剪映/CapCut 应用中重新打开验收。",
+      "en": "The supplied fixture validates model round-trip equality, a subtitle count change from one to two, and unchanged opaque-file bytes. It is not reopened in the Jianying/CapCut application in this demo."
+    },
+    "source": "https://github.com/SuperMarioYL/draftseam/blob/main/docs/demo-results.json",
+    "steps": [
+      {
+        "label": {
+          "zh": "查看示例工程",
+          "en": "Inspect the fixture"
+        },
+        "body": {
+          "zh": "读取 3 条轨道及材料列表。",
+          "en": "Read the three tracks and material lists."
+        },
+        "command": "python -m draftseam.cli inspect tests/fixtures/sample_project",
+        "output": "剪映 draft: sample_project  version=360000 new_version=75.0.0  fps=30.0  duration=10.000s\nmaterials: videos=2 audios=1 texts(字幕)=1 effects=0 video_effects=0 transitions(转场)=1\ntracks: 3\n  [0] 视频轨 (id=AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA) segments=2\n      - seg material=11111111-1111-4111-8111-111111111111 start=0.000s dur=5.000s\n      - seg material=22222222-2222-4222-8222-222222222222 start=5.000s dur=5.000s\n  [1] 配音轨 (id=BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB) segments=1\n      - seg material=33333333-3333-4333-8333-333333333333 start=6.000s dur=4.000s\n  [2] 字幕轨 (id=CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC) segments=1\n      - seg material=44444444-4444-4444-8444-444444444444 start=1.500s dur=2.000s\n        字幕: '你好，剪映'\n转场 materials.transitions: 1\n  - 叠化 dur=0.500s id=55555555-5555-4555-8555-555555555555\n",
+        "image": "/assets/presentation/demo-0-light.svg",
+        "imageDark": "/assets/presentation/demo-0-dark.svg"
+      },
+      {
+        "label": {
+          "zh": "修改并读回",
+          "en": "Edit and read back"
+        },
+        "body": {
+          "zh": "在临时副本中新增字幕，核对模型与 opaque 文件。",
+          "en": "Add a subtitle in a temporary copy and check the model and opaque file."
+        },
+        "command": "python examples/presentation_demo.py",
+        "output": "{\n  \"before\": {\n    \"tracks\": 3,\n    \"texts\": 1\n  },\n  \"after\": {\n    \"tracks\": 3,\n    \"texts\": 2\n  },\n  \"subtitle\": \"A new local subtitle\",\n  \"roundtrip_equal\": true,\n  \"draft_info_unchanged\": true\n}\n",
+        "image": "/assets/presentation/demo-1-light.svg",
+        "imageDark": "/assets/presentation/demo-1-dark.svg"
+      }
+    ]
+  },
+  "quickstart": {
+    "title": {
+      "zh": "从完整输入开始",
+      "en": "Start with complete input"
+    },
+    "body": {
+      "zh": "需要 Python 3.12+。以下演示只在本地解析 JSON，并在临时副本中写入。",
+      "en": "Requires Python 3.12+. The demo parses JSON locally and writes only to a disposable copy."
+    },
+    "steps": [
+      {
+        "title": {
+          "zh": "安装",
+          "en": "Install"
+        },
+        "code": "git clone https://github.com/SuperMarioYL/draftseam.git\ncd draftseam\npython3 -m venv .venv\nsource .venv/bin/activate\npython -m pip install -e ."
+      },
+      {
+        "title": {
+          "zh": "运行自带示例",
+          "en": "Run the supplied example"
+        },
+        "code": "python -m draftseam.cli inspect tests/fixtures/sample_project\npython examples/presentation_demo.py"
+      }
+    ]
+  },
+  "limitations": [
+    {
+      "zh": "只验证了自带 fixture，不能声称所有剪映版本或字段都无损兼容。",
+      "en": "The fixture does not establish lossless compatibility with every Jianying version or field."
+    },
+    {
+      "zh": "不解密 draft_info，不渲染视频。",
+      "en": "The tool neither decrypts draft_info nor renders video."
+    },
+    {
+      "zh": "转场材料的存在不保证应用已将其连接到片段。",
+      "en": "A transition material does not prove it is attached to clips in the editor."
     }
+  ],
+  "footer": {
+    "tag": "0.1.0 · Python 3.12+ · MIT"
   }
 }

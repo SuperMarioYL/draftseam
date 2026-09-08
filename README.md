@@ -1,152 +1,140 @@
-<div align="right"><sub><b>简体中文</b>&nbsp;&nbsp;⇄&nbsp;&nbsp;<a href="./README.en.md">English</a></sub></div>
+[English](README.en.md) | **简体中文**
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/hero-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/hero-light.svg">
-  <img src="./assets/hero-light.svg" width="880" alt="draftseam — 剪映 .draft 时间线读写">
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="assets/presentation/hero-mobile-dark.svg">
+  <source media="(max-width: 640px)" srcset="assets/presentation/hero-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presentation/hero-dark.svg">
+  <img src="assets/presentation/hero-light.svg" width="1000" alt="将支持的剪映 draft bundle 解析成多轨模型，用 Python 或 CLI 修改字幕、音频与转场材料。">
 </picture>
 
-<p align="center"><sub>让 coding agent 直接读写剪映原生 <code>.draft</code> 时间线——不再导 MP4 重剪。</sub></p>
+**将支持的剪映 draft bundle 解析成多轨模型，用 Python 或 CLI 修改字幕、音频与转场材料。**
 
-<p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-0071E3" alt="license"></a>
-  <a href="https://github.com/SuperMarioYL/draftseam/releases"><img src="https://img.shields.io/github/v/release/SuperMarioYL/draftseam?label=release&color=0071E3" alt="release"></a>
-  <a href="https://github.com/SuperMarioYL/draftseam/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/SuperMarioYL/draftseam/ci.yml?label=CI&color=10A37F" alt="CI"></a>
-  <img src="https://img.shields.io/badge/python-3.12+-5E5CE6?logo=python&logoColor=white" alt="python">
-  <img src="https://img.shields.io/badge/Coding%20Agent-ready-5E5CE6" alt="Coding Agent">
-  <img src="https://img.shields.io/badge/Claude%20Code-ready-8985FF" alt="Claude Code">
-</p>
+`v0.1.0` · `Python 3.12+` · [MIT](LICENSE)
 
-**停止导出 MP4 再手工重剪——让 Claude Code 直接改你的剪映工程文件。** draftseam 把剪映原生 `.draft` 时间线解析成结构化多轨模型，agent 插入字幕 / 配音 / 转场，再写回为可重新打开的原生时间线，轨道结构零丢失。
+[Website](https://draftseam.lei6393.com) · [Demo record](docs/demo-results.json)
 
-## 为什么是现在
+## 为什么使用
 
-剪映（CapCut）是中国创作者事实上的剪辑工具，但它的 `.draft` 工程格式是未公开的目录 bundle，coding agent 完全无法触碰原生时间线——今天唯一的"AI 改视频"路径是导出 MP4 再手工重剪，轨道、字幕、转场结构全丢。draftseam 补上这道缝：owning parse/write of 剪映的 `.draft` 格式资产。它落在 agent-video 的需求浪尖上——[OpenMontage](https://github.com/OpenMontage/OpenMontage)（48k★）与 [hyperframes](https://github.com/hyperframes/hyperframes)（41k★）已经把"agent 直接产出可编辑时间线"变成共识，但二者都不碰剪映原生格式；draftseam 是这条链上缺失的格式适配层。Claude Code 是 CN 创作者生成时间线编辑的事实主力 agent，draftseam 让它第一次能直接读写剪映工程。
+当修改对象是字幕或配音位置时，只拿到成片很难保留原来的编辑结构。draftseam 提供对 template.tmp 的结构化读取和写回，并把常见字幕、音频和转场操作收进窄接口。是否能在具体剪映版本中打开，仍需对实际工程验证。
 
-## 目录
-
-- [架构](#架构)
-- [安装与快速开始](#安装与快速开始)
-- [用法](#用法)
-- [Demo](#demo)
-- [路线图](#路线图)
-- [付费](#付费)
-- [许可证](#许可证)
-
-## <img src="https://api.iconify.design/tabler:topology-star-3.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> 架构
-
-剪映 draft 是一个**目录 bundle**：`template.tmp`（纯 JSON：`version` + `tracks` + `materials`）+ `draft_info.json`（base64/AES 加密，opaque，draftseam 不解密）。draftseam 只读写 `template.tmp`——没有二进制 codec、没有 varint、没有 `construct` 依赖，整个时间线就是普通 JSON。
+## 架构
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/atlas-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/atlas-light.svg">
-  <img src="./assets/atlas-light.svg" width="880" alt="架构：剪映 .draft → bundle.py 解析 → Draft 模型 → writer.py 写回 剪映">
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="assets/presentation/architecture-mobile-dark.svg">
+  <source media="(max-width: 640px)" srcset="assets/presentation/architecture-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presentation/architecture-dark.svg">
+  <img src="assets/presentation/architecture-light.svg" width="1000" alt="bundle.py 负责目录 I/O，parser.py 与 schema.py 建立允许额外字段的 Draft 模型，agent_api.py 原地修改材料和 segment，writer.py 写回 JSON。draft_info.json 等旁文件视为 opaque 数据，不解密或同步修改。">
 </picture>
 
-核心数据流：`bundle.py` 拥有目录 bundle I/O → `parser.py` 把 `template.tmp` JSON 提升为 pydantic `Draft` 模型（`extra="allow"` 容忍剪映的未文档化字段）→ `writer.py` 把模型降回 `template.tmp` JSON，round-trip 语义无损 → `agent_api.py` 暴露 `insert_subtitle`（写 `materials.texts`）/ `add_voiceover` / `add_transition`，agent 不碰 JSON。字幕是 `materials.texts` 条目，由 text 轨上的 segment 引用——没有"Subtitle"轨类型。
+bundle.py 负责目录 I/O，parser.py 与 schema.py 建立允许额外字段的 Draft 模型，agent_api.py 原地修改材料和 segment，writer.py 写回 JSON。draft_info.json 等旁文件视为 opaque 数据，不解密或同步修改。
 
-## <img src="https://api.iconify.design/tabler:rocket.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> 安装与快速开始
+格式边界见 [docs/format_notes.md](docs/format_notes.md)。字幕是 materials.texts 与 text track segment 的组合；时间参数以秒输入、以微秒存储。
+
+## 安装
+
+需要 Python 3.12+。以下演示只在本地解析 JSON，并在临时副本中写入。
 
 ```bash
-pip install draftseam                              # 1. 安装（<30s）
-draftseam inspect tests/fixtures/sample_project/  # 2. 打印多轨时间线树
-draftseam add-subtitle tests/fixtures/sample_project/ \
-  --text "AI 生成字幕" --start 2.0 --dur 1.5         # 3. agent 插入字幕并写回
+git clone https://github.com/SuperMarioYL/draftseam.git
+cd draftseam
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
 ```
 
-<details><summary>示例输出</summary>
+## 快速开始
 
+使用仓库自带的示例 bundle，验证模型 round-trip 相等、字幕材料从 1 变 2、opaque 文件字节不变；没有在剪映/CapCut 应用中重新打开验收。
+
+```bash
+python -m draftseam.cli inspect tests/fixtures/sample_project
+python examples/presentation_demo.py
 ```
+
+完整输入在 [tests/fixtures/sample_project](tests/fixtures/sample_project/)。[演示脚本](examples/presentation_demo.py) 自动复制、修改、读回并清理临时目录。
+
+## 使用
+
+inspect 打印轨道树；add-subtitle 接受 --text、--start、--dur，可选 --size 和 --color；add-voiceover 写音频材料及 segment；add-transition 追加转场材料。CLI 的 add-* 会原地写回，Python API 则需显式调用 write_bundle。
+
+## 实际 Demo
+
+<picture>
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="assets/presentation/process-mobile-dark.svg">
+  <source media="(max-width: 640px)" srcset="assets/presentation/process-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presentation/process-dark.svg">
+  <img src="assets/presentation/process-light.svg" width="1000" alt="使用仓库自带的示例 bundle，验证模型 round-trip 相等、字幕材料从 1 变 2、opaque 文件字节不变；没有在剪映/CapCut 应用中重新打开验收。">
+</picture>
+
+### 查看示例工程
+
+读取 3 条轨道及材料列表。
+
+```text
+$ python -m draftseam.cli inspect tests/fixtures/sample_project
 剪映 draft: sample_project  version=360000 new_version=75.0.0  fps=30.0  duration=10.000s
 materials: videos=2 audios=1 texts(字幕)=1 effects=0 video_effects=0 transitions(转场)=1
 tracks: 3
-  [0] 视频轨 segments=2
-      - seg material=1111... start=0.000s dur=5.000s
-  [1] 配音轨 segments=1
-      - seg material=3333... start=6.000s dur=4.000s
-  [2] 字幕轨 segments=1
-      - seg material=4444... start=1.500s dur=2.000s
+  [0] 视频轨 (id=AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA) segments=2
+      - seg material=11111111-1111-4111-8111-111111111111 start=0.000s dur=5.000s
+      - seg material=22222222-2222-4222-8222-222222222222 start=5.000s dur=5.000s
+  [1] 配音轨 (id=BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB) segments=1
+      - seg material=33333333-3333-4333-8333-333333333333 start=6.000s dur=4.000s
+  [2] 字幕轨 (id=CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC) segments=1
+      - seg material=44444444-4444-4444-8444-444444444444 start=1.500s dur=2.000s
         字幕: '你好，剪映'
-inserted 字幕 material C879... at 1.5s (+2.0s) and wrote .../template.tmp
+转场 materials.transitions: 1
+  - 叠化 dur=0.500s id=55555555-5555-4555-8555-555555555555
 ```
 
-</details>
+### 修改并读回
 
-写回后用剪映重新打开 bundle 目录——新字幕作为 `materials.texts` 条目出现在字幕轨上，完全可编辑。
+在临时副本中新增字幕，核对模型与 opaque 文件。
 
-## <img src="https://api.iconify.design/tabler:terminal-2.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> 用法
-
-```bash
-# 打印完整多轨时间线树（视频轨/字幕轨/配音轨/转场/特效 + 时间戳）
-draftseam inspect ~/Movies/JianyingPro/User\ Data/Projects/com.lveditor.draft/myproject/
-
-# 列出本机所有剪映 draft 工程
-draftseam list-projects
-
-# agent 插入字幕（materials.texts 条目 + text 轨引用 segment）
-draftseam add-subtitle myproject/ --text "AI 字幕" --start 2.0 --dur 1.5
-
-# agent 插入配音（materials.audios + audio 轨 segment）
-draftseam add-voiceover myproject/ --path /path/vo.mp3 --start 0.0 --dur 4.0
-
-# 追加转场条目到 materials.transitions
-draftseam add-transition myproject/ --name 叠化 --dur 0.5
-
-# 规范化重写 template.tmp（证明 parse → write round-trip 安全）
-draftseam write myproject/
+```text
+$ python examples/presentation_demo.py
+{
+  "before": {
+    "tracks": 3,
+    "texts": 1
+  },
+  "after": {
+    "tracks": 3,
+    "texts": 2
+  },
+  "subtitle": "A new local subtitle",
+  "roundtrip_equal": true,
+  "draft_info_unchanged": true
+}
 ```
 
-编程式 API（agent 直接 import，不必走 shell）：
+## 能力与接入
 
-```python
-from draftseam import DraftBundle, parse_bundle, write_bundle, insert_subtitle
+<picture>
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="assets/presentation/integrations-mobile-dark.svg">
+  <source media="(max-width: 640px)" srcset="assets/presentation/integrations-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presentation/integrations-dark.svg">
+  <img src="assets/presentation/integrations-light.svg" width="1000" alt="它处理工程结构，渲染与应用内兼容性由剪辑软件负责。修改真实工程前请保留副本；本工具的一代 .bak 不等于完整版本管理。">
+</picture>
 
-bundle = DraftBundle.resolve("tests/fixtures/sample_project/")
-draft = parse_bundle(bundle)                          # template.tmp JSON -> Draft 模型
-insert_subtitle(draft, text="AI 字幕", start=2.0, dur=1.5)  # 改 materials.texts + text 轨
-write_bundle(draft, bundle)                           # 写回 template.tmp，剪映可重新打开
-```
+它处理工程结构，渲染与应用内兼容性由剪辑软件负责。修改真实工程前请保留副本；本工具的一代 .bak 不等于完整版本管理。
 
-更多见 [`examples/agent_insert_subtitle.py`](./examples/agent_insert_subtitle.py)。
 
-## <img src="https://api.iconify.design/tabler:photo.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> Demo
 
-![demo](assets/demo.gif)
+## 配置
 
-agent 用 `draftseam add-subtitle` 往示例工程插入一条字幕，写回后 `materials.texts` 从 1 条变成 2 条，剪映重新打开 bundle 即可编辑新字幕。完整脚本见 [`docs/demo.tape`](./docs/demo.tape)，CI 在 [`demo.yml`](./.github/workflows/demo.yml) 用 vhs 渲染。
+write 会保留上一代 template.tmp.bak。list-projects 可用 --root 指定工程目录。结构化模型允许额外字段，但不理解所有未知字段的语义。add-transition 只添加材料条目，不等于已经把转场挂到相邻片段。
 
-## <img src="https://api.iconify.design/tabler:map-2.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> 路线图
+## 路线图与范围
 
-- [x] **m1 解析 draft**：真实剪映 `.draft` bundle 解析成 `Draft` 模型，`draftseam inspect` 打印多轨时间线树；`bundle.py` / `schema.py` / `parser.py` + 示例 fixture + [`docs/format_notes.md`](./docs/format_notes.md)
-- [x] **m2 写回 draft**：`writer.py` 把 `Draft` 模型降回 `template.tmp` JSON，round-trip 语义无损（`tests/test_roundtrip.py` 通过）
-- [x] **m3 agent 缝合**：`agent_api.py`（`insert_subtitle` / `add_voiceover` / `add_transition`）+ `cli.py` + agent demo + 双语 README + CI 渲染 demo gif
-- [ ] **v0.2**：`draft_info.json` 加密形态与 `template.tmp` 的一致性校验；真实填充 draft 的 segment 字段名文档化
-- [ ] **v0.3**：draftseam pro 批量层（N 个脚本 → N 条可编辑剪映时间线）
+当前提供所支持 JSON bundle 的读写与编辑辅助函数。加密元数据一致性、更多版本的实际工程验证和批量工作流仍为后续方向；没有已上线的 Pro 套餐或 MP4 渲染器。
 
-### draftseam vs 手工导出 MP4 重剪
+- 只验证了自带 fixture，不能声称所有剪映版本或字段都无损兼容。
+- 不解密 draft_info，不渲染视频。
+- 转场材料的存在不保证应用已将其连接到片段。
 
-| 维度 | draftseam | 手工 MP4 重剪 |
-|---|:---:|:---:|
-| agent 可直接编程改时间线 | ✓ | — |
-| 字幕/配音/转场结构保留 | ✓ | ✗（重剪后丢失） |
-| 剪映里可重新编辑 | ✓ | partial（需重排） |
-| 不依赖未公开格式稳定性 | partial（依赖 `.draft` schema） | ✓ |
-| 渲染产出 MP4 | —（产出可编辑时间线） | ✓ |
+[Terminal recording](assets/demo.gif) · [Recording script](docs/demo.tape)
 
-draftseam 产出的是可编辑时间线而非 MP4；如果你要的是成片渲染，draftseam 不是替代品。
+## 许可证
 
-## <img src="https://api.iconify.design/tabler:cash-banknote.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> 付费
-
-draftseam 的 OSS 核心（解析 / 写回 / agent 字幕·配音·转场原语 + CLI）**永久免费**，MIT 协议。商业营收路径是 **draftseam pro** 批量层：把 N 个脚本批量转成 N 条可编辑剪映时间线，面向 MCN / 创作者工作室，¥99–299/月/席位——OSS 核心证明了格式资产的所有权，pro 层把这份所有权变现。pro 层推迟到 v0.3。
-
-## <img src="https://api.iconify.design/tabler:license.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> 许可证
-
-[MIT](./LICENSE) © 2026 SuperMarioYL。提 issue 或 PR 见 [issues](https://github.com/SuperMarioYL/draftseam/issues)。
-
-## 分享
-
-```
-draftseam — 让 Claude Code 直接读写剪映原生 .draft 时间线，不导 MP4 重剪。字幕/配音/转场结构零丢失，写回即可在剪映重新编辑。https://github.com/SuperMarioYL/draftseam
-```
-
-<p align="center"><sub><a href="./LICENSE">MIT</a> © 2026 SuperMarioYL</sub></p>
+[MIT](LICENSE)

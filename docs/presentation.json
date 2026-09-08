@@ -1,0 +1,86 @@
+{
+  "name": "draftseam",
+  "tagline": "Read and edit supported draft timeline structures.",
+  "architecture": {
+    "title": "Draft bundle to editable timeline model",
+    "nodes": [
+      {
+        "title": "Bundle I/O",
+        "detail": "template.tmp JSON"
+      },
+      {
+        "title": "Draft schema",
+        "detail": "Pydantic, extra fields allowed"
+      },
+      {
+        "title": "Edit helpers",
+        "detail": "Subtitle / audio / transition"
+      },
+      {
+        "title": "Writer",
+        "detail": "JSON plus one backup"
+      }
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        0
+      ]
+    ]
+  },
+  "process": {
+    "title": "Edit a disposable copy of the fixture",
+    "steps": [
+      {
+        "title": "Parse fixture",
+        "detail": "3 tracks, 1 text material"
+      },
+      {
+        "title": "Insert subtitle",
+        "detail": "Explicit text at 2.0 seconds"
+      },
+      {
+        "title": "Read back",
+        "detail": "3 tracks, 2 text materials"
+      }
+    ],
+    "result": "Round-trip models match; the opaque draft_info bytes remain unchanged in this fixture."
+  },
+  "integrations": {
+    "title": "Supported timeline and editing routes",
+    "items": [
+      {
+        "title": "Draft directory",
+        "detail": "Requires template.tmp"
+      },
+      {
+        "title": "Python API",
+        "detail": "Structured Draft objects"
+      },
+      {
+        "title": "CLI inspect",
+        "detail": "Readable timeline tree"
+      },
+      {
+        "title": "Subtitle / audio",
+        "detail": "Materials and track segments"
+      },
+      {
+        "title": "Transition material",
+        "detail": "Append to materials.transitions"
+      }
+    ]
+  }
+}

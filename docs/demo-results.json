@@ -1,0 +1,30 @@
+{
+  "version": "0.1.0",
+  "scope": "Offline fixture inspection and API round-trip/subtitle edit on a disposable copy. Does not establish compatibility with a live Jianying/CapCut application.",
+  "inputs": [
+    {
+      "path": "tests/fixtures/sample_project/template.tmp",
+      "sha256": "6f3deaf4bf77ec3b8a53a956c73d771b37a5c4099450e113128159c78d995fd8"
+    },
+    {
+      "path": "tests/fixtures/sample_project/draft_info.json",
+      "sha256": "3021ac3f17d3bded15e5ab00986f67ac284d5a937843086c122f4fa7638f54ed"
+    },
+    {
+      "path": "examples/presentation_demo.py",
+      "sha256": "600901bee83efad68e03766e7ff57f47511587e6c1c85d14c90ff1883608791e"
+    }
+  ],
+  "steps": [
+    {
+      "command": "python -m draftseam.cli inspect tests/fixtures/sample_project",
+      "output": "剪映 draft: sample_project  version=360000 new_version=75.0.0  fps=30.0  duration=10.000s\nmaterials: videos=2 audios=1 texts(字幕)=1 effects=0 video_effects=0 transitions(转场)=1\ntracks: 3\n  [0] 视频轨 (id=AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA) segments=2\n      - seg material=11111111-1111-4111-8111-111111111111 start=0.000s dur=5.000s\n      - seg material=22222222-2222-4222-8222-222222222222 start=5.000s dur=5.000s\n  [1] 配音轨 (id=BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB) segments=1\n      - seg material=33333333-3333-4333-8333-333333333333 start=6.000s dur=4.000s\n  [2] 字幕轨 (id=CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC) segments=1\n      - seg material=44444444-4444-4444-8444-444444444444 start=1.500s dur=2.000s\n        字幕: '你好，剪映'\n转场 materials.transitions: 1\n  - 叠化 dur=0.500s id=55555555-5555-4555-8555-555555555555\n",
+      "exit_code": 0
+    },
+    {
+      "command": "python examples/presentation_demo.py",
+      "output": "{\n  \"before\": {\n    \"tracks\": 3,\n    \"texts\": 1\n  },\n  \"after\": {\n    \"tracks\": 3,\n    \"texts\": 2\n  },\n  \"subtitle\": \"A new local subtitle\",\n  \"roundtrip_equal\": true,\n  \"draft_info_unchanged\": true\n}\n",
+      "exit_code": 0
+    }
+  ]
+}

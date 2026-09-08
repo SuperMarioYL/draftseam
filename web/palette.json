@@ -1,0 +1,38 @@
+{
+  "mode": "auto",
+  "id": "56e69c-6ae5e7-acf6b5-3da3be8c6b90",
+  "identity": "https://github.com/supermarioyl/draftseam",
+  "primary": "#56e69c",
+  "secondary": "#6ae5e7",
+  "highlight": "#acf6b5",
+  "dark": {
+    "bg": "#050c0f",
+    "panel": "#0c171b",
+    "code": "#0a1718",
+    "ink": "#eefdf0",
+    "muted": "#95b9b6",
+    "line": "#173c2e",
+    "primary": "#56e69c",
+    "secondary": "#6ae5e7",
+    "highlight": "#acf6b5",
+    "accent": "#56e69c",
+    "buttonStart": "#32855b",
+    "buttonEnd": "#3c8183",
+    "buttonText": "#ffffff"
+  },
+  "light": {
+    "bg": "#f9fefc",
+    "panel": "#f7fefa",
+    "code": "#f3fdf8",
+    "ink": "#132a25",
+    "muted": "#557a79",
+    "line": "#cbf7e1",
+    "primary": "#318259",
+    "secondary": "#3b7e80",
+    "highlight": "#577c5c",
+    "accent": "#318259",
+    "buttonStart": "#32855b",
+    "buttonEnd": "#3c8183",
+    "buttonText": "#ffffff"
+  }
+}

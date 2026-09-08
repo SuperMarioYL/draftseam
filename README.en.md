@@ -1,152 +1,140 @@
-<div align="right"><sub><b>English</b>&nbsp;&nbsp;⇄&nbsp;&nbsp;<a href="./README.md">简体中文</a></sub></div>
+**English** | [简体中文](README.md)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/hero-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/hero-light.svg">
-  <img src="./assets/hero-light.svg" width="880" alt="draftseam — read/write 剪映 .draft timelines">
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="assets/presentation/hero-mobile-dark.svg">
+  <source media="(max-width: 640px)" srcset="assets/presentation/hero-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presentation/hero-dark.svg">
+  <img src="assets/presentation/hero-light.svg" width="1000" alt="Parse supported Jianying draft bundles into a multitrack model and edit subtitle, audio and transition materials through Python or CLI.">
 </picture>
 
-<p align="center"><sub>Let a coding agent read and write 剪映's native <code>.draft</code> timeline — no MP4 round-trip.</sub></p>
+**Parse supported Jianying draft bundles into a multitrack model and edit subtitle, audio and transition materials through Python or CLI.**
 
-<p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-0071E3" alt="license"></a>
-  <a href="https://github.com/SuperMarioYL/draftseam/releases"><img src="https://img.shields.io/github/v/release/SuperMarioYL/draftseam?label=release&color=0071E3" alt="release"></a>
-  <a href="https://github.com/SuperMarioYL/draftseam/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/SuperMarioYL/draftseam/ci.yml?label=CI&color=10A37F" alt="CI"></a>
-  <img src="https://img.shields.io/badge/python-3.12+-5E5CE6?logo=python&logoColor=white" alt="python">
-  <img src="https://img.shields.io/badge/Coding%20Agent-ready-5E5CE6" alt="Coding Agent">
-  <img src="https://img.shields.io/badge/Claude%20Code-ready-8985FF" alt="Claude Code">
-</p>
+`v0.1.0` · `Python 3.12+` · [MIT](LICENSE)
 
-**Stop exporting MP4 and re-cutting by hand — let Claude Code edit your 剪映 project file directly.** draftseam parses 剪映's native `.draft` timeline into a structured multi-track model, lets a coding agent insert 字幕 / voiceover / transition tracks, and writes it back as a fully editable native timeline that reopens in 剪映 — no layer structure lost.
+[Website](https://draftseam.lei6393.com) · [Demo record](docs/demo-results.json)
 
-## Why now
+## Why use it
 
-剪映 (CapCut) is the de-facto editor for Chinese creators, but its `.draft` project format is an undocumented directory bundle that no coding agent can touch — so the only "AI edits video" path today is export-to-MP4 and re-cut by hand, losing every track, subtitle and transition. draftseam closes that seam by owning parse/write of 剪映's `.draft` format asset. It lands on the agent-video demand wave: [OpenMontage](https://github.com/OpenMontage/OpenMontage) (48k★) and [hyperframes](https://github.com/hyperframes/hyperframes) (41k★) have made "agents produce editable timelines" the consensus, but neither touches 剪映's native format — draftseam is the missing format adapter on that chain. Claude Code is the dominant coding agent CN creators already use to generate timeline edits, and draftseam lets it read and write 剪映 projects directly for the first time.
+An exported video does not expose the original subtitle and audio structure. draftseam provides structured access to template.tmp and focused helpers for common timeline edits. Opening the result in a particular Jianying version still requires validation with that project.
 
-## Table of contents
-
-- [Architecture](#architecture)
-- [Install & Quickstart](#install--quickstart)
-- [Usage](#usage)
-- [Demo](#demo)
-- [Roadmap](#roadmap)
-- [Pricing](#pricing)
-- [License](#license)
-
-## <img src="https://api.iconify.design/tabler:topology-star-3.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> Architecture
-
-A 剪映 draft is a **directory bundle**: `template.tmp` (plain JSON: `version` + `tracks` + `materials`) + `draft_info.json` (base64/AES-encrypted, opaque — draftseam never decrypts it). draftseam reads/writes only `template.tmp` — no binary codec, no varint, no `construct` dependency; the whole timeline is plain JSON.
+## Architecture
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/atlas-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/atlas-light.svg">
-  <img src="./assets/atlas-light.svg" width="880" alt="Architecture: 剪映 .draft → bundle.py parse → Draft model → writer.py write back to 剪映">
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="assets/presentation/architecture-mobile-dark.svg">
+  <source media="(max-width: 640px)" srcset="assets/presentation/architecture-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presentation/architecture-dark.svg">
+  <img src="assets/presentation/architecture-light.svg" width="1000" alt="bundle.py owns directory I/O; parser.py and schema.py create a Draft model that permits extra fields. agent_api.py mutates materials and segments, and writer.py writes JSON back. Sibling files such as draft_info.json are opaque and are not decrypted or synchronized.">
 </picture>
 
-Core flow: `bundle.py` owns directory-bundle I/O → `parser.py` lifts `template.tmp` JSON into a pydantic `Draft` model (`extra="allow"` tolerates 剪映's undocumented fields) → `writer.py` lowers the model back to `template.tmp` JSON with semantically-identical round-trip → `agent_api.py` exposes `insert_subtitle` (writes `materials.texts`) / `add_voiceover` / `add_transition` so the agent never touches JSON. 字幕 (subtitles) are `materials.texts` entries referenced by segments on a text track — there is no "Subtitle" track type.
+bundle.py owns directory I/O; parser.py and schema.py create a Draft model that permits extra fields. agent_api.py mutates materials and segments, and writer.py writes JSON back. Sibling files such as draft_info.json are opaque and are not decrypted or synchronized.
 
-## <img src="https://api.iconify.design/tabler:rocket.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> Install & Quickstart
+See [format notes](docs/format_notes.md). A subtitle combines a materials.texts entry and a text-track segment. API time values are seconds, stored internally as microseconds.
+
+## Install
+
+Requires Python 3.12+. The demo parses JSON locally and writes only to a disposable copy.
 
 ```bash
-pip install draftseam                              # 1. install (<30s)
-draftseam inspect tests/fixtures/sample_project/  # 2. print the multi-track timeline tree
-draftseam add-subtitle tests/fixtures/sample_project/ \
-  --text "AI subtitle" --start 2.0 --dur 1.5       # 3. agent inserts a subtitle and writes back
+git clone https://github.com/SuperMarioYL/draftseam.git
+cd draftseam
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
 ```
 
-<details><summary>Sample output</summary>
+## Quickstart
 
+The supplied fixture validates model round-trip equality, a subtitle count change from one to two, and unchanged opaque-file bytes. It is not reopened in the Jianying/CapCut application in this demo.
+
+```bash
+python -m draftseam.cli inspect tests/fixtures/sample_project
+python examples/presentation_demo.py
 ```
+
+Inputs are in [tests/fixtures/sample_project](tests/fixtures/sample_project/). The [demo script](examples/presentation_demo.py) copies, edits, reads back and removes its temporary directory.
+
+## Usage
+
+inspect prints the track tree. add-subtitle accepts --text, --start and --dur, plus optional --size and --color. add-voiceover adds audio material and a segment; add-transition appends transition material. CLI add-* commands write in place, while Python API edits require write_bundle.
+
+## Recorded demo
+
+<picture>
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="assets/presentation/process-mobile-dark.svg">
+  <source media="(max-width: 640px)" srcset="assets/presentation/process-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presentation/process-dark.svg">
+  <img src="assets/presentation/process-light.svg" width="1000" alt="The supplied fixture validates model round-trip equality, a subtitle count change from one to two, and unchanged opaque-file bytes. It is not reopened in the Jianying/CapCut application in this demo.">
+</picture>
+
+### Inspect the fixture
+
+Read the three tracks and material lists.
+
+```text
+$ python -m draftseam.cli inspect tests/fixtures/sample_project
 剪映 draft: sample_project  version=360000 new_version=75.0.0  fps=30.0  duration=10.000s
 materials: videos=2 audios=1 texts(字幕)=1 effects=0 video_effects=0 transitions(转场)=1
 tracks: 3
-  [0] 视频轨 segments=2
-      - seg material=1111... start=0.000s dur=5.000s
-  [1] 配音轨 segments=1
-      - seg material=3333... start=6.000s dur=4.000s
-  [2] 字幕轨 segments=1
-      - seg material=4444... start=1.500s dur=2.000s
+  [0] 视频轨 (id=AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA) segments=2
+      - seg material=11111111-1111-4111-8111-111111111111 start=0.000s dur=5.000s
+      - seg material=22222222-2222-4222-8222-222222222222 start=5.000s dur=5.000s
+  [1] 配音轨 (id=BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB) segments=1
+      - seg material=33333333-3333-4333-8333-333333333333 start=6.000s dur=4.000s
+  [2] 字幕轨 (id=CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC) segments=1
+      - seg material=44444444-4444-4444-8444-444444444444 start=1.500s dur=2.000s
         字幕: '你好，剪映'
-inserted 字幕 material C879... at 1.5s (+2.0s) and wrote .../template.tmp
+转场 materials.transitions: 1
+  - 叠化 dur=0.500s id=55555555-5555-4555-8555-555555555555
 ```
 
-</details>
+### Edit and read back
 
-After the write, reopen the bundle directory in 剪映 — the new subtitle appears on the 字幕 track as a `materials.texts` entry, fully editable.
+Add a subtitle in a temporary copy and check the model and opaque file.
 
-## <img src="https://api.iconify.design/tabler:terminal-2.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> Usage
-
-```bash
-# print the full multi-track tree (video/audio/text tracks, transitions, effects + timestamps)
-draftseam inspect ~/Movies/JianyingPro/User\ Data/Projects/com.lveditor.draft/myproject/
-
-# list every 剪映 draft project on this machine
-draftseam list-projects
-
-# agent inserts a subtitle (materials.texts entry + a referencing segment on a text track)
-draftseam add-subtitle myproject/ --text "AI subtitle" --start 2.0 --dur 1.5
-
-# agent inserts a voiceover (materials.audios + an audio-track segment)
-draftseam add-voiceover myproject/ --path /path/vo.mp3 --start 0.0 --dur 4.0
-
-# append a transition entry to materials.transitions
-draftseam add-transition myproject/ --name 叠化 --dur 0.5
-
-# canonicalise-rewrite template.tmp (proves parse → write round-trip safety)
-draftseam write myproject/
+```text
+$ python examples/presentation_demo.py
+{
+  "before": {
+    "tracks": 3,
+    "texts": 1
+  },
+  "after": {
+    "tracks": 3,
+    "texts": 2
+  },
+  "subtitle": "A new local subtitle",
+  "roundtrip_equal": true,
+  "draft_info_unchanged": true
+}
 ```
 
-Programmatic API (import directly from a coding agent, no shell needed):
+## Capabilities and integration
 
-```python
-from draftseam import DraftBundle, parse_bundle, write_bundle, insert_subtitle
+<picture>
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="assets/presentation/integrations-mobile-dark.svg">
+  <source media="(max-width: 640px)" srcset="assets/presentation/integrations-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presentation/integrations-dark.svg">
+  <img src="assets/presentation/integrations-light.svg" width="1000" alt="It handles project structure; rendering and application compatibility belong to the editor. Keep a project copy before real edits; a one-generation .bak is not full version control.">
+</picture>
 
-bundle = DraftBundle.resolve("tests/fixtures/sample_project/")
-draft = parse_bundle(bundle)                          # template.tmp JSON -> Draft model
-insert_subtitle(draft, text="AI subtitle", start=2.0, dur=1.5)  # edits materials.texts + text track
-write_bundle(draft, bundle)                           # writes template.tmp, reopens in 剪映
-```
+It handles project structure; rendering and application compatibility belong to the editor. Keep a project copy before real edits; a one-generation .bak is not full version control.
 
-More in [`examples/agent_insert_subtitle.py`](./examples/agent_insert_subtitle.py).
 
-## <img src="https://api.iconify.design/tabler:photo.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> Demo
 
-![demo](assets/demo.gif)
+## Configuration
 
-A coding agent uses `draftseam add-subtitle` to insert a subtitle into the sample project; after the write, `materials.texts` grows from 1 to 2 and 剪映 reopens the bundle with the new subtitle editable. Full script in [`docs/demo.tape`](./docs/demo.tape); CI renders it via vhs in [`demo.yml`](./.github/workflows/demo.yml).
+Writes preserve one previous template.tmp.bak. list-projects accepts --root. The schema allows extra fields but does not understand all unknown semantics. add-transition adds a material entry; it does not by itself attach a transition between adjacent clips.
 
-## <img src="https://api.iconify.design/tabler:map-2.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> Roadmap
+## Roadmap and scope
 
-- [x] **m1 parse draft**: a real 剪映 `.draft` bundle parses into a `Draft` model and `draftseam inspect` prints a multi-track timeline tree; `bundle.py` / `schema.py` / `parser.py` + sample fixture + [`docs/format_notes.md`](./docs/format_notes.md)
-- [x] **m2 write draft**: `writer.py` lowers the `Draft` model back to `template.tmp` JSON with semantically-identical round-trip (`tests/test_roundtrip.py` green)
-- [x] **m3 agent seam**: `agent_api.py` (`insert_subtitle` / `add_voiceover` / `add_transition`) + `cli.py` + agent demo + bilingual README + CI-rendered demo gif
-- [ ] **v0.2**: consistency check between the encrypted `draft_info.json` form and `template.tmp`; document segment-level field names against a populated real draft
-- [ ] **v0.3**: draftseam pro batch tier (N scripts → N editable 剪映 timelines)
+Supported JSON-bundle access and editing helpers are implemented. Encrypted-metadata consistency, validation across more real project versions and batch workflows remain future work. There is no live Pro plan or MP4 renderer.
 
-### draftseam vs manual MP4 re-cut
+- The fixture does not establish lossless compatibility with every Jianying version or field.
+- The tool neither decrypts draft_info nor renders video.
+- A transition material does not prove it is attached to clips in the editor.
 
-| Axis | draftseam | manual MP4 re-cut |
-|---|:---:|:---:|
-| agent edits timeline programmatically | ✓ | — |
-| subtitle / voiceover / transition structure preserved | ✓ | ✗ (lost after re-cut) |
-| reopens editable in 剪映 | ✓ | partial (must re-arrange) |
-| no dependency on undocumented format stability | partial (depends on `.draft` schema) | ✓ |
-| renders an MP4 | — (produces an editable timeline) | ✓ |
+[Terminal recording](assets/demo.gif) · [Recording script](docs/demo.tape)
 
-draftseam produces an editable timeline, not an MP4; if your goal is final-cut rendering, draftseam is not a replacement.
+## License
 
-## <img src="https://api.iconify.design/tabler:cash-banknote.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> Pricing
-
-The draftseam OSS core (parse / write / agent subtitle·voiceover·transition primitives + CLI) is **free forever** under MIT. The commercial revenue path is a **draftseam pro** batch tier: turn N scripts into N editable 剪映 timelines for MCN / creator studios, ¥99–299/mo per seat — the OSS core proves ownership of the format asset, and the pro tier monetises it. The pro tier is deferred to v0.3.
-
-## <img src="https://api.iconify.design/tabler:license.svg?color=%230071E3&width=24" height="22" align="absmiddle" alt=""> License
-
-[MIT](./LICENSE) © 2026 SuperMarioYL. File an issue or PR at [issues](https://github.com/SuperMarioYL/draftseam/issues).
-
-## Share this
-
-```
-draftseam — let Claude Code read/write 剪映's native .draft timeline directly. No MP4 re-cut, no layer structure lost; write back and re-edit in 剪映. https://github.com/SuperMarioYL/draftseam
-```
-
-<p align="center"><sub><a href="./LICENSE">MIT</a> © 2026 SuperMarioYL</sub></p>
+[MIT](LICENSE)
