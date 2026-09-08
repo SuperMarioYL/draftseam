@@ -104,6 +104,10 @@
           "alt": {
             "zh": "使用仓库自带的示例 bundle，验证模型 round-trip 相等、字幕材料从 1 变 2、opaque 文件字节不变；没有在剪映/CapCut 应用中重新打开验收。",
             "en": "The supplied fixture validates model round-trip equality, a subtitle count change from one to two, and unchanged opaque-file bytes. It is not reopened in the Jianying/CapCut application in this demo."
+          },
+          "mobile": {
+            "light": "/assets/presentation/process-mobile-light.svg",
+            "dark": "/assets/presentation/process-mobile-dark.svg"
           }
         }
       },
@@ -122,6 +126,10 @@
           "alt": {
             "zh": "bundle.py 负责目录 I/O，parser.py 与 schema.py 建立允许额外字段的 Draft 模型，agent_api.py 原地修改材料和 segment，writer.py 写回 JSON。draft_info.json 等旁文件视为 opaque 数据，不解密或同步修改。",
             "en": "bundle.py owns directory I/O; parser.py and schema.py create a Draft model that permits extra fields. agent_api.py mutates materials and segments, and writer.py writes JSON back. Sibling files such as draft_info.json are opaque and are not decrypted or synchronized."
+          },
+          "mobile": {
+            "light": "/assets/presentation/architecture-mobile-light.svg",
+            "dark": "/assets/presentation/architecture-mobile-dark.svg"
           }
         }
       },
@@ -140,6 +148,10 @@
           "alt": {
             "zh": "它处理工程结构，渲染与应用内兼容性由剪辑软件负责。修改真实工程前请保留副本；本工具的一代 .bak 不等于完整版本管理。",
             "en": "It handles project structure; rendering and application compatibility belong to the editor. Keep a project copy before real edits; a one-generation .bak is not full version control."
+          },
+          "mobile": {
+            "light": "/assets/presentation/integrations-mobile-light.svg",
+            "dark": "/assets/presentation/integrations-mobile-dark.svg"
           }
         }
       }
