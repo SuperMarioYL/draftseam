@@ -10,7 +10,7 @@
   },
   "meta": {
     "visual_profile": "neon-particle",
-    "content_version": "0.1.0",
+    "content_version": "0.2.0",
     "demo_source": "docs/demo-results.json"
   },
   "hero": {
@@ -68,12 +68,12 @@
     },
     {
       "title": {
-        "zh": "读回检查",
-        "en": "Check the written result"
+        "zh": "一致性校验",
+        "en": "Consistency check"
       },
       "body": {
-        "zh": "将写回后的模型与预期结构比较。",
-        "en": "Compare the written model with the intended structure."
+        "zh": "draftseam check 校验材料引用、轨道引用与时间范围；加密的 draft_info 保持 opaque。",
+        "en": "draftseam check validates material and track references plus timeranges; the encrypted draft_info stays opaque."
       }
     }
   ],
@@ -233,6 +233,13 @@
           "en": "Run the supplied example"
         },
         "code": "python -m draftseam.cli inspect tests/fixtures/sample_project\npython examples/presentation_demo.py"
+      },
+      {
+        "title": {
+          "zh": "校验一致性",
+          "en": "Validate consistency"
+        },
+        "code": "python -m draftseam.cli check tests/fixtures/sample_project"
       }
     ]
   },
@@ -251,6 +258,6 @@
     }
   ],
   "footer": {
-    "tag": "0.1.0 · Python 3.12+ · MIT"
+    "tag": "0.2.0 · Python 3.12+ · MIT"
   }
 }

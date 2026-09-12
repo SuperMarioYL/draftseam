@@ -10,6 +10,8 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+import pytest
+
 from draftseam import agent_api
 from draftseam.bundle import DraftBundle
 from draftseam.parser import parse_bundle
@@ -106,3 +108,44 @@ def test_add_transition_round_trips(tmp_path: Path) -> None:
     write_bundle(draft, bundle)
     redraft = parse_bundle(bundle)
     assert any(t.id == tid for t in redraft.materials.transitions)
+
+
+# --- v0.2: time-argument validation (library contract) ----------------------
+#
+# v0.1 silently wrote negative timeranges for negative values and crashed
+# with ValueError/OverflowError for NaN/Inf inside _seconds_to_micros. The
+# primitives now reject bad values BEFORE any mutation.
+
+
+def test_insert_subtitle_rejects_negative_start(tmp_path: Path) -> None:
+    draft = parse_bundle(DraftBundle(_copy_fixture(tmp_path)))
+    n_texts = len(draft.materials.texts)
+    with pytest.raises(ValueError, match="start"):
+        agent_api.insert_subtitle(draft, text="x", start=-1.0, dur=1.0)
+    assert len(draft.materials.texts) == n_texts  # not mutated
+
+
+def test_insert_subtitle_rejects_nonpositive_dur(tmp_path: Path) -> None:
+    draft = parse_bundle(DraftBundle(_copy_fixture(tmp_path)))
+    with pytest.raises(ValueError, match="dur"):
+        agent_api.insert_subtitle(draft, text="x", start=0.0, dur=0.0)
+    with pytest.raises(ValueError, match="dur"):
+        agent_api.insert_subtitle(draft, text="x", start=0.0, dur=-2.0)
+
+
+def test_insert_subtitle_rejects_nan_and_inf(tmp_path: Path) -> None:
+    draft = parse_bundle(DraftBundle(_copy_fixture(tmp_path)))
+    with pytest.raises(ValueError, match="finite"):
+        agent_api.insert_subtitle(draft, text="x", start=float("nan"), dur=1.0)
+    with pytest.raises(ValueError, match="finite"):
+        agent_api.insert_subtitle(draft, text="x", start=0.0, dur=float("inf"))
+
+
+def test_add_voiceover_and_transition_reject_bad_times(tmp_path: Path) -> None:
+    draft = parse_bundle(DraftBundle(_copy_fixture(tmp_path)))
+    with pytest.raises(ValueError, match="start"):
+        agent_api.add_voiceover(draft, path="/tmp/a.mp3", start=-0.1, dur=1.0)
+    with pytest.raises(ValueError, match="dur"):
+        agent_api.add_voiceover(draft, path="/tmp/a.mp3", start=0.0, dur=0.0)
+    with pytest.raises(ValueError, match="duration"):
+        agent_api.add_transition(draft, name="叠化", duration=-0.5)

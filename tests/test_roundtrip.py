@@ -94,3 +94,55 @@ def test_write_does_not_touch_draft_info(tmp_path: Path) -> None:
     write_bundle(draft, bundle)
     after = bundle.draft_info_path.read_bytes()
     assert before == after
+
+
+def test_noop_write_is_raw_json_identical(tmp_path: Path) -> None:
+    """v0.2 fidelity contract: a no-op write leaves template.tmp JSON deep-equal.
+
+    v0.1 used a plain model_dump() and injected every modelled-but-absent
+    field — e.g. ``"mix": null`` appeared on every track that never had one.
+    """
+    import json
+
+    bundle_dir = _copy_fixture(tmp_path)
+    bundle = DraftBundle(bundle_dir)
+    original_raw = bundle.read_template()
+
+    draft = parse_bundle(bundle)
+    write_bundle(draft, bundle)
+
+    written_raw = bundle.read_template()
+    assert written_raw == original_raw
+    # the v0.1 regression, pinned explicitly: no injected "mix" keys
+    for i, (orig_track, written_track) in enumerate(
+        zip(original_raw["tracks"], written_raw["tracks"])
+    ):
+        if "mix" not in orig_track:
+            assert "mix" not in written_track, f"tracks[{i}] gained an injected mix key"
+
+
+def test_write_preserves_explicit_nulls(tmp_path: Path) -> None:
+    """Source nulls (canvas_config.background, cover, ...) must survive verbatim."""
+    bundle_dir = _copy_fixture(tmp_path)
+    bundle = DraftBundle(bundle_dir)
+    original_raw = bundle.read_template()
+    assert original_raw["canvas_config"]["background"] is None
+
+    draft = parse_bundle(bundle)
+    write_bundle(draft, bundle)
+
+    written_raw = bundle.read_template()
+    assert written_raw["canvas_config"]["background"] is None
+    assert written_raw["cover"] is None
+
+
+def test_assigned_duration_survives_write(tmp_path: Path) -> None:
+    """exclude_unset must not drop fields assigned after parse (the
+    _bump_duration path mutates draft.duration through attribute assignment)."""
+    bundle_dir = _copy_fixture(tmp_path)
+    bundle = DraftBundle(bundle_dir)
+    draft = parse_bundle(bundle)
+    draft.duration = 12_000_000
+    write_bundle(draft, bundle)
+    redraft = parse_bundle(bundle)
+    assert redraft.duration == 12_000_000

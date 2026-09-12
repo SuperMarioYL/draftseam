@@ -9,7 +9,7 @@
 
 **Parse supported Jianying draft bundles into a multitrack model and edit subtitle, audio and transition materials through Python or CLI.**
 
-`v0.1.0` · `Python 3.12+` · [MIT](LICENSE)
+`v0.2.0` · `Python 3.12+` · [MIT](LICENSE)
 
 [Website](https://draftseam.lei6393.com) · [Demo record](docs/demo-results.json)
 
@@ -48,6 +48,7 @@ The supplied fixture validates model round-trip equality, a subtitle count chang
 
 ```bash
 python -m draftseam.cli inspect tests/fixtures/sample_project
+python -m draftseam.cli check tests/fixtures/sample_project
 python examples/presentation_demo.py
 ```
 
@@ -55,7 +56,7 @@ Inputs are in [tests/fixtures/sample_project](tests/fixtures/sample_project/). T
 
 ## Usage
 
-inspect prints the track tree. add-subtitle accepts --text, --start and --dur, plus optional --size and --color. add-voiceover adds audio material and a segment; add-transition appends transition material. CLI add-* commands write in place, while Python API edits require write_bundle.
+inspect prints the track tree. add-subtitle accepts --text, --start and --dur, plus optional --size and --color. add-voiceover adds audio material and a segment; add-transition appends transition material. check validates a bundle's internal consistency (segment material references resolve, track references match, timeranges are non-negative, duration covers the content) with exit codes 0/1/2 for consistent / problems found / unreadable. Invalid time arguments (negative, zero-length, NaN/Inf) are rejected before any write with a clean error. CLI add-* commands write in place, while Python API edits require write_bundle.
 
 ## Recorded demo
 
@@ -127,11 +128,13 @@ Writes preserve one previous template.tmp.bak. list-projects accepts --root. The
 
 ## Roadmap and scope
 
-Supported JSON-bundle access and editing helpers are implemented. Encrypted-metadata consistency, validation across more real project versions and batch workflows remain future work. There is no live Pro plan or MP4 renderer.
+Supported JSON-bundle access and editing helpers are implemented. v0.2 adds the `draftseam check` consistency validation (referential integrity and timerange checks on template.tmp; draft_info.json stays encrypted and opaque — no byte-level comparison) plus segment-level field documentation. Validation across more real project versions and batch workflows remain future work. There is no live Pro plan or MP4 renderer.
 
 - The fixture does not establish lossless compatibility with every Jianying version or field.
 - The tool neither decrypts draft_info nor renders video.
 - A transition material does not prove it is attached to clips in the editor.
+
+Version history is in [CHANGELOG.md](CHANGELOG.md).
 
 [Terminal recording](assets/demo.gif) · [Recording script](docs/demo.tape)
 

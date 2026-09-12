@@ -15,6 +15,7 @@ draft has none).
 
 from __future__ import annotations
 
+import math
 import uuid
 from typing import Optional
 
@@ -38,6 +39,25 @@ TRACK_VIDEO = "video"
 def new_id() -> str:
     """A 剪映-style uppercase GUID (e.g. ``F2DAE6E6-9AA1-40F8-B87E-2AC5CB52D371``)."""
     return str(uuid.uuid4()).upper()
+
+
+def _validate_seconds(name: str, value: float, *, positive: bool = False) -> float:
+    """Reject timeline values 剪映 cannot represent before any mutation happens.
+
+    ``name`` is the argument name for the error message. ``positive`` requires
+    ``value > 0`` (durations); otherwise ``value >= 0`` (start offsets).
+    """
+    try:
+        ok = math.isfinite(value)
+    except TypeError:
+        raise ValueError(f"{name} must be a number, got {value!r}") from None
+    if not ok:
+        raise ValueError(f"{name} must be a finite number, got {value!r}")
+    if positive and value <= 0:
+        raise ValueError(f"{name} must be > 0 seconds, got {value!r}")
+    if not positive and value < 0:
+        raise ValueError(f"{name} must be >= 0 seconds, got {value!r}")
+    return value
 
 
 def _seconds_to_micros(seconds: float) -> int:
@@ -85,7 +105,13 @@ def insert_subtitle(
 
     Returns:
         The text material id (useful for the agent to reference later).
+
+    Raises:
+        ValueError: if ``start`` is not a finite number >= 0 or ``dur`` is not
+            a finite number > 0 (raised before the draft is mutated).
     """
+    _validate_seconds("start", start)
+    _validate_seconds("dur", dur, positive=True)
     mat_id = material_id or new_id()
     material = TextMaterial(
         id=mat_id,
@@ -123,7 +149,14 @@ def add_voiceover(
     name: Optional[str] = None,
     material_id: Optional[str] = None,
 ) -> str:
-    """Append a 配音 (voiceover) audio material + segment at ``start`` seconds."""
+    """Append a 配音 (voiceover) audio material + segment at ``start`` seconds.
+
+    Raises:
+        ValueError: if ``start`` is not a finite number >= 0 or ``dur`` is not
+            a finite number > 0 (raised before the draft is mutated).
+    """
+    _validate_seconds("start", start)
+    _validate_seconds("dur", dur, positive=True)
     mat_id = material_id or new_id()
     material = AudioMaterial(
         id=mat_id,
@@ -165,7 +198,12 @@ def add_transition(
     between adjacent segments on the timeline. This primitive owns the material
     entry (the format-asset seam); linking it to a specific segment boundary is
     left to the agent once segment ids are known.
+
+    Raises:
+        ValueError: if ``duration`` is not a finite number > 0 (raised before
+            the draft is mutated).
     """
+    _validate_seconds("duration", duration, positive=True)
     mat_id = material_id or new_id()
     material = TransitionMaterial(
         id=mat_id,

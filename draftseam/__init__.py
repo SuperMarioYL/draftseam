@@ -13,11 +13,12 @@ from __future__ import annotations
 
 from .agent_api import add_transition, add_voiceover, insert_subtitle, new_id
 from .bundle import DraftBundle, DraftBundleError
+from .checks import check_bundle, check_draft
 from .parser import parse_bundle, parse_dict, parse_path
 from .schema import Draft, Materials, Segment, Track
 from .writer import draft_to_dict, write_bundle
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "__version__",
@@ -35,5 +36,7 @@ __all__ = [
     "insert_subtitle",
     "add_voiceover",
     "add_transition",
+    "check_bundle",
+    "check_draft",
     "new_id",
 ]

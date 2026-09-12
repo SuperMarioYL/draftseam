@@ -9,7 +9,7 @@
 
 **将支持的剪映 draft bundle 解析成多轨模型，用 Python 或 CLI 修改字幕、音频与转场材料。**
 
-`v0.1.0` · `Python 3.12+` · [MIT](LICENSE)
+`v0.2.0` · `Python 3.12+` · [MIT](LICENSE)
 
 [Website](https://draftseam.lei6393.com) · [Demo record](docs/demo-results.json)
 
@@ -48,6 +48,7 @@ python -m pip install -e .
 
 ```bash
 python -m draftseam.cli inspect tests/fixtures/sample_project
+python -m draftseam.cli check tests/fixtures/sample_project
 python examples/presentation_demo.py
 ```
 
@@ -55,7 +56,7 @@ python examples/presentation_demo.py
 
 ## 使用
 
-inspect 打印轨道树；add-subtitle 接受 --text、--start、--dur，可选 --size 和 --color；add-voiceover 写音频材料及 segment；add-transition 追加转场材料。CLI 的 add-* 会原地写回，Python API 则需显式调用 write_bundle。
+inspect 打印轨道树；add-subtitle 接受 --text、--start、--dur，可选 --size 和 --color；add-voiceover 写音频材料及 segment；add-transition 追加转场材料。check 校验 bundle 内部一致性（segment 的 material 引用存在、track 引用匹配、时间范围非负、duration 覆盖内容），退出码 0/1/2 分别代表一致 / 有问题 / 不可读。CLI 的 add-* 会原地写回，Python API 则需显式调用 write_bundle。无效时间参数（负数、0 时长、NaN/Inf）在写入前被拒绝并以干净的错误退出。
 
 ## 实际 Demo
 
@@ -127,11 +128,13 @@ write 会保留上一代 template.tmp.bak。list-projects 可用 --root 指定�
 
 ## 路线图与范围
 
-当前提供所支持 JSON bundle 的读写与编辑辅助函数。加密元数据一致性、更多版本的实际工程验证和批量工作流仍为后续方向；没有已上线的 Pro 套餐或 MP4 渲染器。
+当前提供所支持 JSON bundle 的读写与编辑辅助函数。v0.2 已加入 `draftseam check` 一致性校验（template.tmp 的引用完整性与时间范围检查；draft_info.json 保持加密 opaque，不做字节级比对）与 segment 字段文档。更多版本的实际工程验证和批量工作流仍为后续方向；没有已上线的 Pro 套餐或 MP4 渲染器。
 
 - 只验证了自带 fixture，不能声称所有剪映版本或字段都无损兼容。
 - 不解密 draft_info，不渲染视频。
 - 转场材料的存在不保证应用已将其连接到片段。
+
+版本历史见 [CHANGELOG.md](CHANGELOG.md)。
 
 [Terminal recording](assets/demo.gif) · [Recording script](docs/demo.tape)
 

@@ -6,6 +6,7 @@ Commands::
     draftseam add-subtitle <bundle> --text ... --start ... --dur ...
     draftseam add-voiceover <bundle> --path ... --start ... --dur ...
     draftseam add-transition <bundle> --name ... --dur ...
+    draftseam check <bundle>                         # validate bundle consistency
     draftseam write <bundle>                          # persist pending edits
 
 ``inspect`` parses ``template.tmp`` and prints a readable multi-track tree
@@ -16,15 +17,49 @@ so the result reopens in 剪映 with the new entry present.
 
 from __future__ import annotations
 
+import functools
 from typing import Optional
 
 import click
 
 from . import agent_api
-from .bundle import DEFAULT_DRAFT_ROOT, DraftBundle
+from .bundle import DEFAULT_DRAFT_ROOT, DraftBundle, DraftBundleError
+from .checks import check_bundle
 from .parser import parse_bundle
 from .schema import MICROS_PER_SECOND
 from .writer import draft_to_dict, write_bundle
+
+#: Failures that mean "the draft input is bad" rather than "draftseam broke":
+#: DraftBundleError (missing/unreadable bundle), and ValueError — which subsumes
+#: json.JSONDecodeError (corrupt template.tmp), pydantic.ValidationError
+#: (wrong JSON shape) and the agent_api time-argument rejections.
+_BAD_INPUT_ERRORS = (DraftBundleError, ValueError)
+
+
+def _clean_bad_input(fn):
+    """Map bad-draft-input exceptions to click's clean ``Error:`` + exit 2.
+
+    Without this, a directory without template.tmp or a corrupt template.tmp
+    dumps a raw traceback and exits 1; with it the CLI keeps one contract for
+    every bad input: a single red ``Error: <reason>`` line, exit code 2 — the
+    same code click already uses for unknown options.
+    """
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except _BAD_INPUT_ERRORS as exc:
+            raise click.UsageError(str(exc)) from exc
+
+    return wrapper
+
+
+#: BUNDLE deliberately drops click's ``exists=True``: a bare project name like
+#: ``2月18日`` must reach DraftBundle.resolve, which maps it under the default
+#: 剪映 projects root. A path that exists nowhere is reported cleanly by
+#: DraftBundle.require() through @_clean_bad_input instead.
+BUNDLE_ARG = click.Path(file_okay=False)
 
 
 def _micros_to_seconds(micros: Optional[int]) -> float:
@@ -111,7 +146,8 @@ def cli() -> None:
 
 
 @cli.command("inspect")
-@click.argument("bundle", type=click.Path(exists=True, file_okay=False))
+@click.argument("bundle", type=BUNDLE_ARG)
+@_clean_bad_input
 def inspect_cmd(bundle: str) -> None:
     """Print the multi-track timeline tree of a draft bundle."""
     b = DraftBundle.resolve(bundle)
@@ -120,12 +156,13 @@ def inspect_cmd(bundle: str) -> None:
 
 
 @cli.command("add-subtitle")
-@click.argument("bundle", type=click.Path(exists=True, file_okay=False))
+@click.argument("bundle", type=BUNDLE_ARG)
 @click.option("--text", "text", required=True, help="字幕 string (CJK OK).")
 @click.option("--start", "start", required=True, type=float, help="timeline start, seconds")
 @click.option("--dur", "dur", required=True, type=float, help="on-screen duration, seconds")
 @click.option("--size", "size", type=float, default=None, help="optional text size")
 @click.option("--color", "color", default=None, help="optional text color e.g. #FFFFFF")
+@_clean_bad_input
 def add_subtitle_cmd(bundle: str, text: str, start: float, dur: float,
                      size: Optional[float], color: Optional[str]) -> None:
     """Insert a 字幕 (materials.texts entry) into a draft bundle and write it back."""
@@ -139,11 +176,12 @@ def add_subtitle_cmd(bundle: str, text: str, start: float, dur: float,
 
 
 @cli.command("add-voiceover")
-@click.argument("bundle", type=click.Path(exists=True, file_okay=False))
+@click.argument("bundle", type=BUNDLE_ARG)
 @click.option("--path", "path", required=True, help="audio file path for the 配音 material")
 @click.option("--start", "start", required=True, type=float, help="timeline start, seconds")
 @click.option("--dur", "dur", required=True, type=float, help="duration, seconds")
 @click.option("--name", "name", default=None, help="optional material display name")
+@_clean_bad_input
 def add_voiceover_cmd(bundle: str, path: str, start: float, dur: float,
                       name: Optional[str]) -> None:
     """Insert a 配音 (audio material + segment) into a draft bundle and write it back."""
@@ -155,10 +193,11 @@ def add_voiceover_cmd(bundle: str, path: str, start: float, dur: float,
 
 
 @cli.command("add-transition")
-@click.argument("bundle", type=click.Path(exists=True, file_okay=False))
+@click.argument("bundle", type=BUNDLE_ARG)
 @click.option("--name", "name", required=True, help="transition name")
 @click.option("--dur", "dur", required=True, type=float, help="duration, seconds")
 @click.option("--path", "path", default=None, help="optional transition asset path")
+@_clean_bad_input
 def add_transition_cmd(bundle: str, name: str, dur: float, path: Optional[str]) -> None:
     """Append a transition entry to materials.transitions and write it back."""
     b = DraftBundle.resolve(bundle)
@@ -169,7 +208,8 @@ def add_transition_cmd(bundle: str, name: str, dur: float, path: Optional[str]) 
 
 
 @cli.command("write")
-@click.argument("bundle", type=click.Path(exists=True, file_okay=False))
+@click.argument("bundle", type=BUNDLE_ARG)
+@_clean_bad_input
 def write_cmd(bundle: str) -> None:
     """Re-serialize a bundle's template.tmp from its current on-disk JSON (no-op round-trip).
 
@@ -180,6 +220,45 @@ def write_cmd(bundle: str) -> None:
     draft = parse_bundle(b)
     write_bundle(draft, b)
     click.echo(f"round-trip wrote {b.template_path} ({len(draft_to_dict(draft))} top-level keys)")
+
+
+@cli.command("check")
+@click.argument("bundle", type=BUNDLE_ARG)
+@_clean_bad_input
+def check_cmd(bundle: str) -> None:
+    """Validate a draft bundle's internal consistency.
+
+    Exit codes: 0 = consistent, 1 = problems found (listed), 2 = bundle
+    unreadable (missing template.tmp, invalid JSON, wrong shape).
+
+    Checks the surface draftseam owns (template.tmp): every segment's
+    material_id resolves into a materials bucket, segment track_id back-refs
+    match their track, timeranges are non-negative, and draft.duration covers
+    the last segment end. draft_info.json stays opaque (encrypted) — a
+    byte-level comparison with template.tmp is impossible without decryption,
+    so only its presence is noted.
+    """
+    b = DraftBundle.resolve(bundle)
+    problems = check_bundle(b)
+    if not b.draft_info_path.is_file():
+        click.echo(
+            f"note: draft_info.json absent — 剪映's encrypted persisted form; "
+            "draftseam treats it as opaque and did not verify it"
+        )
+    if problems:
+        for p in problems:
+            click.echo(f"problem: {p}")
+        click.echo(f"{len(problems)} problem(s) found in {b.path}")
+        raise click.exceptions.Exit(1)
+    draft = parse_bundle(b)
+    n_tracks = len(draft.tracks)
+    n_segments = sum(len(t.segments) for t in draft.tracks)
+    click.echo(
+        f"OK: {b.path} is internally consistent "
+        f"({n_tracks} tracks, {n_segments} segments, "
+        f"{len(draft.materials.texts)} texts, {len(draft.materials.videos)} videos, "
+        f"{len(draft.materials.audios)} audios)"
+    )
 
 
 @cli.command("list-projects")

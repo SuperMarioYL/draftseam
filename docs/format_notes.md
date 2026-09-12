@@ -165,21 +165,58 @@ The same applies to `draft_meta_info.json` and the `.backup/*.bak` files.
 > `template.tmp`. Reopening in 剪映 reads the bundle; if `draft_info.json`
 > disagrees, 剪映 typically regenerates it from `template.tmp`. This is the
 > m1/m2 boundary; reconciling the encrypted form is a future milestone.
+>
+> v0.2 adds `draftseam check`: it validates the consistency that can be
+> checked **without decrypting anything** — referential integrity
+> (`segment.material_id` resolves into a materials bucket, `segment.track_id`
+> matches its track), non-negative timeranges, and `duration` covering the
+> last segment end. A byte-level comparison against the encrypted
+> `draft_info.json` remains out of scope by the opacity boundary above.
 
 ## 6. Field-name uncertainty (why the models are tolerant)
 
 Local draft samples on this Mac are **empty** (`duration: 0`, `tracks: []`,
 all material buckets `[]`). That means **segment-level field names beyond the
-commonly-observed ones are unverified**. draftseam does not hardcode every
-field; the pydantic models use `extra="allow"` so:
+commonly-observed ones are unverified against an externally populated real
+draft**. draftseam does not hardcode every field; the pydantic models use
+`extra="allow"` so:
 
 * the documented fields (`id`, `track_id`, `material_id`,
   `source_timerange`, `target_timerange`, ...) are typed for ergonomics;
 * every other field 剪映 actually writes is preserved through a parse → write
   round-trip and shows up in `model_dump()`.
 
-When a real, populated creator draft is available, document the segment
-fields here and promote them to explicit model attributes.
+### Segment-level fields observed in the bundled sample (v0.2)
+
+The fixture `tests/fixtures/sample_project` was populated during m1 from the
+real JianyingPro 75.0.0 bundle shell (both real local drafts are empty), so
+its field set — not its values — is the current evidence. Every segment in
+the sample carries exactly these fields:
+
+| field | observed shape | meaning |
+|---|---|---|
+| `id` | GUID string | segment identity |
+| `track_id` | GUID string | back-reference to the owning track |
+| `material_id` | GUID string | reference into `materials.<bucket>` |
+| `source_timerange` | `{duration, offset}` µs | window into the source media |
+| `target_timerange` | `{duration, offset}` µs | window on the timeline |
+| `source` | int (`0`) | source selector |
+| `common_keyframe_refs` | list (empty) | keyframe back-refs |
+| `animation_entries` | list (empty) | animation entries |
+| `is_placeholder` | bool | placeholder flag |
+| `render_index` | int | render order |
+| `extra_transform` | object | transform payload |
+| `clip` | object | clip payload |
+| `responsive_layout` | object | responsive layout payload |
+| `cartoon_name` | string (empty) | cartoon/animation name (unmodelled extra) |
+| `is_tone_adjust` | bool | tone-adjust flag (unmodelled extra) |
+
+`draftseam check` enforces the structural relations of the first rows
+(material/track references, timerange sanity); the payload fields
+(`clip`, `extra_transform`, ...) are preserved but their inner semantics are
+not interpreted. When a real, populated creator draft becomes available,
+re-verify this table against it and promote load-bearing fields to explicit
+model attributes.
 
 ## 7. Time units
 
